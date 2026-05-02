@@ -202,7 +202,7 @@ impl App {
             let wnd = CreateWindowExW(
                 WS_EX_OVERLAPPEDWINDOW,
                 CLASS_NAME,
-                w!("hiii"),
+                w!("ttetris"),
                 WS_OVERLAPPEDWINDOW,
                 0,
                 0,
