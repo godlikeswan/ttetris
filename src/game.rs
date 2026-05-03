@@ -176,4 +176,20 @@ impl Game {
             self.try_hold();
         }
     }
+
+    pub fn restart(&mut self) {
+        self.hold.was_used = false;
+        self.hold.piece = None;
+        let l = self.queue.bag.len();
+        for _ in 0..(l + 5) {
+            self.queue.shift();
+        }
+        self.current_piece.set(self.queue.shift());
+
+        for i in 0..10 {
+            for j in 0..40 {
+                self.field.buffer[i][j] = Color::BLACK;
+            }
+        }
+    }
 }

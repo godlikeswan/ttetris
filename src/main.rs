@@ -96,6 +96,9 @@ impl App {
                     app.game.try_hold();
                     app.game.controls_state.hold = true;
                 }
+                if p1.0 == settings::KEY_RESTART.0 as usize {
+                    app.game.restart();
+                }
             }
             if msg == WM_KEYUP {
                 if p1.0 == settings::KEY_LEFT.0 as usize {
@@ -166,6 +169,9 @@ impl App {
                         if virtual_key == settings::KEY_HOLD.0 {
                             app.game.try_hold();
                             app.game.controls_state.hold = true;
+                        }
+                        if virtual_key == settings::KEY_RESTART.0 {
+                            app.game.restart();
                         }
                     }
                 }

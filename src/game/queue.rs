@@ -9,7 +9,7 @@ use crate::game::piece::Piece;
 
 pub struct Queue {
     buffer: VecDeque<Piece>,
-    bag: Vec<Piece>,
+    pub bag: Vec<Piece>,
 }
 
 impl Queue {

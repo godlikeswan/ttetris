@@ -7,7 +7,7 @@ Stacking game/tool written in Rust + Windows API + OpenGL.
 ## Features
 
 - [ ] Top out detection
-- [ ] Restart functionality
+- [x] Restart functionality
 - [x] Queue preview
 - [x] Hold
 - [x] SRS (Super Rotation System)
@@ -41,6 +41,7 @@ Default controls:
 | Turn CCW | Z |
 | Turn CW | X |
 | Hold | C |
+| Restart | V |
 
 Controls and other settings can be changed in [src/settings.rs](src/settings.rs) (recompilation required = run the command above again)
 

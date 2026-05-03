@@ -1,5 +1,5 @@
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    VIRTUAL_KEY, VK_C, VK_DOWN, VK_LEFT, VK_RIGHT, VK_SHIFT, VK_UP, VK_X, VK_Z,
+    VIRTUAL_KEY, VK_C, VK_DOWN, VK_LEFT, VK_RIGHT, VK_SHIFT, VK_UP, VK_V, VK_X, VK_Z
 };
 
 // # Controls
@@ -12,6 +12,8 @@ pub const KEY_TURN_180: VIRTUAL_KEY = VK_SHIFT;
 pub const KEY_TURN_CCW: VIRTUAL_KEY = VK_Z;
 pub const KEY_TURN_CW: VIRTUAL_KEY = VK_X;
 pub const KEY_HOLD: VIRTUAL_KEY = VK_C;
+
+pub const KEY_RESTART: VIRTUAL_KEY = VK_V;
 
 // # Handling
 // in ms, Delay Auto Shift
