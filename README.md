@@ -12,7 +12,7 @@ Stacking game/tool written in Rust + Windows API + OpenGL.
 - [x] Hold
 - [x] SRS (Super Rotation System)
 - [x] 7 piece bad randomizer
-- [ ] Undo/Redo
+- [x] Undo/([] Redo)
 - [ ] In game settings
 - [ ] Practice mode/backfire/cheese
 - [ ] Scoring/garbage counting
@@ -42,6 +42,7 @@ Default controls:
 | Turn CW | X |
 | Hold | C |
 | Restart | V |
+| Undo | A |
 
 Controls and other settings can be changed in [src/settings.rs](src/settings.rs) (recompilation required = run the command above again)
 

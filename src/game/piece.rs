@@ -19,7 +19,7 @@ pub enum PieceType {
 }
 
 pub struct Piece {
-    r#type: PieceType,
+    pub r#type: PieceType,
 }
 
 impl Piece {

@@ -8,7 +8,7 @@ use windows::Win32::Graphics::OpenGL::{
 use crate::game::piece::Piece;
 
 pub struct Queue {
-    buffer: VecDeque<Piece>,
+    pub buffer: VecDeque<Piece>,
     pub bag: Vec<Piece>,
 }
 

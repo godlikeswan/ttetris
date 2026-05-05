@@ -13,7 +13,9 @@ use windows::Win32::{
     System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
 };
 
-use crate::game::{current_piece::CurrentPiece, field::Field, queue::Queue};
+use crate::game::{
+    current_piece::CurrentPiece, field::Field, piece::{Piece, PieceType}, queue::Queue, state::GameState,
+};
 use crate::{
     game::{color::Color, controls::ControlsState, hold::Hold},
     settings,
@@ -26,6 +28,7 @@ mod field;
 mod hold;
 mod piece;
 mod queue;
+pub mod state;
 
 pub struct Game {
     pub field: Field,
@@ -106,7 +109,7 @@ impl Game {
         }
     }
 
-    pub fn update(&mut self, diff: i64) {
+    pub fn update(&mut self, diff: i64) -> bool {
         let das = settings::DAS;
         if self.controls_state.left || self.controls_state.right {
             let mut freq = 0;
@@ -129,7 +132,9 @@ impl Game {
 
         if !self.current_piece.update(diff, &self.field) {
             self.lock();
+            return true;
         }
+        return false;
     }
 
     pub fn try_hold(&mut self) {
@@ -190,6 +195,54 @@ impl Game {
             for j in 0..40 {
                 self.field.buffer[i][j] = Color::BLACK;
             }
+        }
+    }
+
+    pub fn get_state(&self) -> GameState {
+        let mut field = [[Color::BLACK; 40]; 10];
+        for i in 0..10 {
+            for j in 0..40 {
+                field[i][j] = self.field.buffer[i][j];
+            }
+        }
+        let hold = if self.hold.piece.is_some() {
+            Some(self.hold.piece.as_ref().unwrap().r#type)
+        } else {
+            None
+        };
+
+        let mut queue = [PieceType::I; 5];
+
+        for i in 0..5 {
+            queue[i] = self.queue.buffer[i].r#type;
+        }
+
+        GameState {
+            hold,
+            field,
+            current_piece: self.current_piece.piece.r#type,
+            queue,
+            rng_state: 0,
+        }
+    }
+
+    pub fn set_state(&mut self, state: GameState) {
+        if state.hold.is_none() {
+            self.hold.piece = None;
+        } else {
+            self.hold.piece = Some(Piece::new(state.hold.unwrap()));
+        }
+
+        self.current_piece.set(Piece::new(state.current_piece));
+
+        for i in 0..10 {
+            for j in 0..40 {
+                self.field.buffer[i][j] = state.field[i][j];
+            }
+        }
+
+        for i in 0..5 {
+            self.queue.buffer[i] = Piece::new(state.queue[i]);
         }
     }
 }
