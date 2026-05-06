@@ -87,8 +87,8 @@ impl CurrentPiece {
             if Self::can_fit(field, &self.piece, self.x, self.y, new_r) {
                 self.since_last_move_down = 0;
                 self.r = new_r;
-                return;
             }
+            return;
         }
         let rotation_tests = self.piece.get_rotation_tests(self.r, new_r);
         for i in 0..5 {
