@@ -130,12 +130,12 @@ unsafe extern "system" fn wnd_proc(wnd: HWND, msg: u32, p1: WPARAM, p2: LPARAM) 
                     if virtual_key == settings::KEY_SOFT_DROP.0 {
                         app.game.soft_drop();
                     }
-                    if virtual_key == settings::KEY_LEFT.0 {
+                    if virtual_key == settings::KEY_LEFT.0 && !app.game.controls_state.left  {
                         app.game.current_piece.try_go_left(&app.game.field);
                         app.game.controls_state.left = true;
                         let _ = QueryPerformanceCounter(&mut app.game.controls_state.left_counter);
                     }
-                    if virtual_key == settings::KEY_RIGHT.0 {
+                    if virtual_key == settings::KEY_RIGHT.0 && !app.game.controls_state.right  {
                         app.game.current_piece.try_go_right(&app.game.field);
                         app.game.controls_state.right = true;
                         let _ = QueryPerformanceCounter(&mut app.game.controls_state.right_counter);
@@ -149,7 +149,7 @@ unsafe extern "system" fn wnd_proc(wnd: HWND, msg: u32, p1: WPARAM, p2: LPARAM) 
                     if virtual_key == settings::KEY_TURN_CW.0 {
                         app.game.current_piece.try_turn(&app.game.field, 1);
                     }
-                    if virtual_key == settings::KEY_HOLD.0 {
+                    if virtual_key == settings::KEY_HOLD.0 && !app.game.controls_state.hold  {
                         app.game.try_hold();
                         app.game.controls_state.hold = true;
                     }
