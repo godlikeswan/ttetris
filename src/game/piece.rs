@@ -23,7 +23,7 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub const ALL_TYPES: [PieceType; 7] = [
+    pub const _ALL_TYPES_A_Z: [PieceType; 7] = [
         PieceType::I,
         PieceType::J,
         PieceType::L,
@@ -31,6 +31,15 @@ impl Piece {
         PieceType::S,
         PieceType::T,
         PieceType::Z,
+    ];
+    pub const ALL_TYPES_RAINBOW: [PieceType; 7] = [
+        PieceType::Z,
+        PieceType::L,
+        PieceType::O,
+        PieceType::S,
+        PieceType::I,
+        PieceType::J,
+        PieceType::T,
     ];
 
     pub fn new(r#type: PieceType) -> Piece {

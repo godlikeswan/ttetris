@@ -1,35 +1,30 @@
 use std::collections::VecDeque;
-
-use rand::{rngs::SmallRng, seq::SliceRandom};
 use windows::Win32::Graphics::OpenGL::{
     glColor3fv, glPopMatrix, glPushMatrix, glRecti, glTranslatef,
 };
 
 use crate::game::piece::Piece;
+use crate::game::rng::Rng;
 
 pub struct Queue {
     pub buffer: VecDeque<Piece>,
-    pub bag: Vec<Piece>,
+    pub rng: Rng,
 }
 
 impl Queue {
     pub fn new() -> Self {
         let mut queue = Queue {
             buffer: VecDeque::new(),
-            bag: Vec::new(),
+            rng: Rng::make(),
         };
-        queue.refill_bag();
-        for _ in 0..5 {
-            queue.buffer.push_back(queue.bag.pop().unwrap());
-        }
+        queue.refill();
         return queue;
     }
 
     pub fn shift(&mut self) -> Piece {
         let piece = self.buffer.pop_front().unwrap();
-        self.buffer.push_back(self.bag.pop().unwrap());
-        if self.bag.is_empty() {
-            self.refill_bag()
+        if self.buffer.len() < 5 {
+            self.refill()
         };
         return piece;
     }
@@ -37,7 +32,8 @@ impl Queue {
     pub fn render(&self) {
         unsafe {
             glPushMatrix();
-            for piece in &self.buffer {
+            for i in 0..5 {
+                let piece = &self.buffer[i];
                 glColor3fv((*piece.get_color()).into());
                 let shape = piece.get_shape(0);
                 glPushMatrix();
@@ -56,12 +52,17 @@ impl Queue {
         }
     }
 
-    fn refill_bag(&mut self) {
-        for piece_type in Piece::ALL_TYPES {
-            self.bag.push(Piece::new(piece_type));
+    fn refill(&mut self) {
+        let mut bag = Piece::ALL_TYPES_RAINBOW;
+        self.rng.shuffle(&mut bag);
+        for piece_type in bag {
+            self.buffer.push_back(Piece::new(piece_type));
         }
-        let mut rng: SmallRng = rand::make_rng();
-        // let mut rng = rngs::SmallRng::seed_from_u64(0);
-        self.bag.shuffle(&mut rng);
+
+    }
+
+    pub fn reset(&mut self) {
+        self.buffer.clear();
+        self.refill();
     }
 }

@@ -1,4 +1,5 @@
-#![windows_subsystem = "windows"]
+// To show test report (see https://github.com/rust-lang/rust/issues/67159)
+#![cfg_attr(not(test), windows_subsystem = "windows")]
 
 mod game;
 mod settings;

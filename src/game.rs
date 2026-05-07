@@ -14,7 +14,7 @@ use windows::Win32::{
 };
 
 use crate::game::{
-    current_piece::CurrentPiece, field::Field, piece::{Piece, PieceType}, queue::Queue, state::GameState,
+    current_piece::CurrentPiece, field::Field, piece::{Piece}, queue::Queue, state::GameState,
 };
 use crate::{
     game::{color::Color, controls::ControlsState, hold::Hold},
@@ -28,6 +28,7 @@ mod field;
 mod hold;
 mod piece;
 mod queue;
+mod rng;
 pub mod state;
 
 pub struct Game {
@@ -185,10 +186,8 @@ impl Game {
     pub fn restart(&mut self) {
         self.hold.was_used = false;
         self.hold.piece = None;
-        let l = self.queue.bag.len();
-        for _ in 0..(l + 5) {
-            self.queue.shift();
-        }
+
+        self.queue.reset();
         self.current_piece.set(self.queue.shift());
 
         for i in 0..10 {
@@ -211,10 +210,10 @@ impl Game {
             None
         };
 
-        let mut queue = [PieceType::I; 5];
+        let mut queue = Vec::new();
 
-        for i in 0..5 {
-            queue[i] = self.queue.buffer[i].r#type;
+        for piece in &self.queue.buffer {
+            queue.push(piece.r#type);
         }
 
         GameState {
@@ -222,7 +221,7 @@ impl Game {
             field,
             current_piece: self.current_piece.piece.r#type,
             queue,
-            rng_state: 0,
+            rng_state: self.queue.rng.t,
         }
     }
 
@@ -241,8 +240,11 @@ impl Game {
             }
         }
 
-        for i in 0..5 {
-            self.queue.buffer[i] = Piece::new(state.queue[i]);
+        self.queue.buffer.clear();
+        for piece_type in state.queue {
+            self.queue.buffer.push_back(Piece::new(piece_type));
         }
+
+        self.queue.rng.t = state.rng_state;
     }
 }
