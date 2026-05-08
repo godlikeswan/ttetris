@@ -10,8 +10,7 @@ use windows::Win32::{
     UI::{
         Input::{GetRawInputData, RAWINPUT, RAWINPUTHEADER, RID_INPUT, RIM_TYPEKEYBOARD},
         WindowsAndMessaging::{
-            DefWindowProcW, KF_REPEAT, PostQuitMessage, RI_KEY_BREAK, SW_NORMAL, ShowWindow,
-            WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE,
+            DefWindowProcW, KF_REPEAT, PostQuitMessage, RI_KEY_BREAK, SW_NORMAL, ShowWindow, WINDOW_EX_STYLE, WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE
         },
     },
 };
@@ -28,7 +27,7 @@ use windows::{
         System::LibraryLoader::GetModuleHandleW,
         UI::WindowsAndMessaging::{
             CS_HREDRAW, CS_OWNDC, CS_VREDRAW, CreateWindowExW, HICON, IDC_ARROW, LoadCursorW,
-            RegisterClassExW, WNDCLASSEXW, WS_EX_OVERLAPPEDWINDOW, WS_OVERLAPPEDWINDOW,
+            RegisterClassExW, WNDCLASSEXW, WS_OVERLAPPEDWINDOW,
         },
     },
     core::{PCWSTR, w},
@@ -195,7 +194,7 @@ pub fn create_window() -> HDC {
         };
         RegisterClassExW(&window_class);
         let wnd = CreateWindowExW(
-            WS_EX_OVERLAPPEDWINDOW,
+            WINDOW_EX_STYLE(0),
             CLASS_NAME,
             w!("ttetris"),
             WS_OVERLAPPEDWINDOW,
