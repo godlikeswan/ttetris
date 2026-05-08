@@ -13,6 +13,7 @@ Stacking game/tool written in Rust + Windows API + OpenGL.
 - [x] SRS (Super Rotation System)
 - [x] 7 piece bad randomizer
 - [x] Undo/([] Redo)
+- [x] Settings file
 - [ ] In game settings
 - [ ] Practice mode/backfire/cheese
 - [ ] Scoring/garbage counting

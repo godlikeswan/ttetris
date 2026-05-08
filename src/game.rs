@@ -4,21 +4,21 @@ use windows::Win32::{
     Graphics::{
         Gdi::{GetStockObject, HDC, SYSTEM_FONT, SelectObject},
         OpenGL::{
-            GL_BLEND, GL_COLOR_BUFFER_BIT, GL_MODELVIEW, GL_ONE_MINUS_SRC_ALPHA, GL_PROJECTION,
-            GL_SRC_ALPHA, glBlendFunc, glClear, glClearColor, glEnable, glLoadIdentity,
-            glMatrixMode, glOrtho, glPopMatrix, glPushMatrix, glScalef, glTranslatef,
-            wglUseFontBitmapsW,
+            GL_BACK, GL_BLEND, GL_COLOR_BUFFER_BIT, GL_FRONT, GL_MODELVIEW, GL_ONE_MINUS_SRC_ALPHA,
+            GL_PROJECTION, GL_SRC_ALPHA, glBlendFunc, glClear, glClearColor, glDrawBuffer,
+            glEnable, glLoadIdentity, glMatrixMode, glOrtho, glPopMatrix, glPushMatrix, glScalef,
+            glTranslatef, wglUseFontBitmapsW,
         },
     },
     System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
 };
 
-use crate::game::{
-    current_piece::CurrentPiece, field::Field, piece::{Piece}, queue::Queue, state::GameState,
-};
+use crate::game::{color::Color, controls::ControlsState, hold::Hold};
 use crate::{
-    game::{color::Color, controls::ControlsState, hold::Hold},
-    settings,
+    game::{
+        current_piece::CurrentPiece, field::Field, piece::Piece, queue::Queue, state::GameState,
+    },
+    settings::Settings,
 };
 
 mod color;
@@ -39,9 +39,10 @@ pub struct Game {
     queue: Queue,
     pub w: i32,
     pub h: i32,
+    pub settings: Settings,
 }
 impl Game {
-    pub fn new(w: i32, h: i32) -> Self {
+    pub fn new() -> Self {
         let mut queue = Queue::new();
         let current_piece = CurrentPiece::new(queue.shift());
         Self {
@@ -50,8 +51,9 @@ impl Game {
             queue,
             current_piece,
             controls_state: ControlsState::new(),
-            h: h as _,
-            w: w as _,
+            h: 0 as _,
+            w: 0 as _,
+            settings: Default::default(),
         }
     }
 
@@ -101,7 +103,7 @@ impl Game {
             self.hold.render();
             glTranslatef(5.0, 0.0, 0.0);
             self.field.render();
-            self.current_piece.render(&self.field);
+            self.current_piece.render(&self.field, &self.settings);
             glTranslatef(11.0, 0.0, 0.0);
             self.queue.render();
             glPopMatrix();
@@ -111,7 +113,7 @@ impl Game {
     }
 
     pub fn update(&mut self, diff: i64) -> bool {
-        let das = settings::DAS;
+        let das = self.settings.handling.das;
         if self.controls_state.left || self.controls_state.right {
             let mut freq = 0;
             let mut current = 0;
@@ -131,7 +133,7 @@ impl Game {
             }
         }
 
-        if !self.current_piece.update(diff, &self.field) {
+        if !self.current_piece.update(diff, &self.field, &self.settings) {
             self.lock();
             return true;
         }

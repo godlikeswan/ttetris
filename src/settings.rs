@@ -1,33 +1,76 @@
-use windows::Win32::UI::Input::KeyboardAndMouse::{
-    VIRTUAL_KEY, VK_A, VK_C, VK_DOWN, VK_LEFT, VK_RIGHT, VK_SHIFT, VK_UP, VK_V, VK_X, VK_Z
+use std::{env::current_exe, fs, path::PathBuf};
+
+use crate::settings::{
+    appearance_settings::AppearanceSettings, controls_settings::ControlsSettings,
+    handling_settings::HandlingSettings, rules_settings::RulesSettings,
 };
 
-// # Controls
-pub const KEY_LEFT: VIRTUAL_KEY = VK_LEFT;
-pub const KEY_RIGHT: VIRTUAL_KEY = VK_RIGHT;
-pub const KEY_HARD_DROP: VIRTUAL_KEY = VK_UP;
-pub const KEY_SOFT_DROP: VIRTUAL_KEY = VK_DOWN;
+pub mod appearance_settings;
+mod controls_settings;
+mod handling_settings;
+pub mod rules_settings;
 
-pub const KEY_TURN_180: VIRTUAL_KEY = VK_SHIFT;
-pub const KEY_TURN_CCW: VIRTUAL_KEY = VK_Z;
-pub const KEY_TURN_CW: VIRTUAL_KEY = VK_X;
-pub const KEY_HOLD: VIRTUAL_KEY = VK_C;
+#[derive(serde::Deserialize, serde::Serialize)]
+pub struct Settings {
+    pub help: String,
+    pub controls: ControlsSettings,
+    pub handling: HandlingSettings,
+    pub rules: RulesSettings,
+    pub appearance: AppearanceSettings,
+}
 
-pub const KEY_RESTART: VIRTUAL_KEY = VK_V;
-pub const KEY_UNDO: VIRTUAL_KEY = VK_A;
+impl Default for Settings {
+    fn default() -> Self {
+        Settings {
+            help: "\
+Settings file.
+You can change values here. If you break something this file will
+be copied with an 'old' suffix and the default one will replace this.
+"
+            .to_string(),
+            controls: Default::default(),
+            handling: Default::default(),
+            rules: Default::default(),
+            appearance: Default::default(),
+        }
+    }
+}
 
-// # Handling
-// in ms, Delay Auto Shift
-pub const DAS: i64 = 150;
+impl Settings {
+    const SETTINGS_FILE_NAME: &str = "ttetris_settings.toml";
+    const OLD_SETTINGS_FILE_NAME: &str = "ttetris_settings.old.toml";
 
-// # Appearance
-pub const INIT_WIDTH: i32 = 850;
-pub const INIT_HEIGHT: i32 = 600;
+    fn get_settings_file_path() -> PathBuf {
+        let mut current_exe_path = current_exe().unwrap();
+        current_exe_path.pop();
+        current_exe_path.push(Self::SETTINGS_FILE_NAME);
+        current_exe_path
+    }
 
-pub const DRAW_SHADOW: bool = true;
-pub const SHADOW_ALPHA: f32 = 0.5;
+    fn get_old_settings_file_path() -> PathBuf {
+        let mut current_exe_path = current_exe().unwrap();
+        current_exe_path.pop();
+        current_exe_path.push(Self::OLD_SETTINGS_FILE_NAME);
+        current_exe_path
+    }
 
-// # Rules
-pub const NO_GRAVITY: bool = true;
-// in ms, the greater the slower pieces fall
-pub const FALL_DELAY: i64 = 500;
+    pub fn load_from_file() -> Option<Settings> {
+        let settings_str = fs::read_to_string(Self::get_settings_file_path()).ok()?;
+        let settings_result = toml::from_str(&settings_str) as Result<Settings, _>;
+        if settings_result.is_err() {
+            dbg!(settings_result.err());
+        }
+        let settings = toml::from_str(&settings_str).ok();
+        if settings.is_none() {
+            let _ = fs::copy(
+                Self::get_settings_file_path(),
+                Self::get_old_settings_file_path(),
+            );
+        }
+        settings
+    }
+    pub fn save_to_file(&self) {
+        let settings_str = toml::to_string_pretty(self).unwrap();
+        let _ = fs::write(Self::get_settings_file_path(), settings_str);
+    }
+}

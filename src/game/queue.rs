@@ -58,7 +58,6 @@ impl Queue {
         for piece_type in bag {
             self.buffer.push_back(Piece::new(piece_type));
         }
-
     }
 
     pub fn reset(&mut self) {

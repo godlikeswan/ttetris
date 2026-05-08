@@ -4,7 +4,7 @@ use windows::Win32::Graphics::OpenGL::{
 
 use crate::{
     game::{color::Color, field::Field, piece::Piece},
-    settings,
+    settings::{Settings, appearance_settings::AppearanceSettings, rules_settings::RulesSettings},
 };
 
 pub struct CurrentPiece {
@@ -34,12 +34,18 @@ impl CurrentPiece {
         self.piece = piece;
     }
 
-    pub fn update(&mut self, diff: i64, field: &Field) -> bool {
+    pub fn update(&mut self, diff: i64, field: &Field, settings: &Settings) -> bool {
+        let RulesSettings {
+            help: _,
+            no_gravity,
+            fall_delay,
+        } = settings.rules;
+
         self.since_last_move_down += diff;
-        let g_period = settings::FALL_DELAY * 1000;
+        let g_period = fall_delay * 1000;
         if self.since_last_move_down > g_period {
             self.since_last_move_down -= g_period;
-            if settings::NO_GRAVITY {
+            if no_gravity {
                 return true;
             }
             if self.can_go_down(field) {
@@ -110,7 +116,14 @@ impl CurrentPiece {
         Self::can_fit(field, &self.piece, self.x + dx, self.y + dy, self.r)
     }
 
-    pub fn render(&self, field: &Field) {
+    pub fn render(&self, field: &Field, settings: &Settings) {
+        let AppearanceSettings {
+            help: _,
+            save_last_window_placement: _,
+            draw_shadow,
+            shadow_alpha,
+            window_placement: _,
+        } = settings.appearance;
         let piece = &self.piece;
         unsafe {
             glPushMatrix();
@@ -122,7 +135,7 @@ impl CurrentPiece {
 
             // glScalef(1.0, -1.0, 1.0);
 
-            if settings::DRAW_SHADOW {
+            if draw_shadow {
                 let mut dy_shadow = 0;
                 while self.can_move(field, 0, dy_shadow - 1) {
                     dy_shadow -= 1;
@@ -133,7 +146,7 @@ impl CurrentPiece {
                 glScalef(1.0, -1.0, 1.0);
 
                 let color: [f32; 3] = (*piece.get_color()).into();
-                glColor4f(color[0], color[1], color[2], settings::SHADOW_ALPHA);
+                glColor4f(color[0], color[1], color[2], shadow_alpha);
 
                 for i in 0..4 {
                     for j in 0..4 {

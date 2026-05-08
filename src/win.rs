@@ -1,16 +1,15 @@
 const CLASS_NAME: PCWSTR = w!("ttetris_class_name");
 
+use std::mem;
+
 use windows::Win32::{
     Foundation::{HWND, LPARAM, LRESULT, WPARAM},
-    Graphics::{
-        Gdi::{HDC, UpdateWindow},
-        OpenGL::glViewport,
-    },
+    Graphics::{Gdi::HDC, OpenGL::glViewport},
     System::Performance::QueryPerformanceCounter,
     UI::{
         Input::{GetRawInputData, RAWINPUT, RAWINPUTHEADER, RID_INPUT, RIM_TYPEKEYBOARD},
         WindowsAndMessaging::{
-            DefWindowProcW, KF_REPEAT, PostQuitMessage, RI_KEY_BREAK, SW_NORMAL, ShowWindow, WINDOW_EX_STYLE, WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE
+            CW_USEDEFAULT, DefWindowProcW, DestroyWindow, GetWindowPlacement, KF_REPEAT, PostQuitMessage, RI_KEY_BREAK, WINDOW_EX_STYLE, WINDOWPLACEMENT, WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE
         },
     },
 };
@@ -33,66 +32,79 @@ use windows::{
     core::{PCWSTR, w},
 };
 
-use crate::{APP_PTR, settings};
+use crate::APP_PTR;
 
 unsafe extern "system" fn wnd_proc(wnd: HWND, msg: u32, p1: WPARAM, p2: LPARAM) -> LRESULT {
     unsafe {
+        let app = &mut *APP_PTR;
+
         if msg == WM_DESTROY {
             // glDeleteContext
+            if app.game.settings.appearance.save_last_window_placement {
+                let mut wp = WINDOWPLACEMENT {
+                    length: mem::size_of::<WINDOWPLACEMENT>() as _,
+                    ..Default::default()
+                };
+                let _ = GetWindowPlacement(wnd, &mut wp as _);
+                app.game.settings.appearance.window_placement = wp;
+            }
+            app.game.settings.save_to_file();
             PostQuitMessage(0);
             return LRESULT(0);
         }
-        let app = &mut *APP_PTR;
 
         if msg == WM_KEYDOWN && (p2.0 as u32 / 0x10000) & KF_REPEAT != KF_REPEAT {
-            if p1.0 == settings::KEY_HARD_DROP.0 as usize {
+            if p1.0 == app.game.settings.controls.hard_drop as usize {
                 app.game.hard_drop();
             }
-            if p1.0 == settings::KEY_SOFT_DROP.0 as usize {
+            if p1.0 == app.game.settings.controls.soft_drop as usize {
                 app.game.soft_drop();
             }
-            if p1.0 == settings::KEY_LEFT.0 as usize {
+            if p1.0 == app.game.settings.controls.left as usize {
                 app.game.current_piece.try_go_left(&app.game.field);
                 app.game.controls_state.left = true;
                 let _ = QueryPerformanceCounter(&mut app.game.controls_state.left_counter);
             }
-            if p1.0 == settings::KEY_RIGHT.0 as usize {
+            if p1.0 == app.game.settings.controls.right as usize {
                 app.game.current_piece.try_go_right(&app.game.field);
                 app.game.controls_state.right = true;
                 let _ = QueryPerformanceCounter(&mut app.game.controls_state.right_counter);
             }
-            if p1.0 == settings::KEY_TURN_180.0 as usize {
+            if p1.0 == app.game.settings.controls.turn_180 as usize {
                 app.game.current_piece.try_turn(&app.game.field, 2);
             }
-            if p1.0 == settings::KEY_TURN_CCW.0 as usize {
+            if p1.0 == app.game.settings.controls.turn_ccw as usize {
                 app.game.current_piece.try_turn(&app.game.field, -1);
             }
-            if p1.0 == settings::KEY_TURN_CW.0 as usize {
+            if p1.0 == app.game.settings.controls.turn_cw as usize {
                 app.game.current_piece.try_turn(&app.game.field, 1);
             }
-            if p1.0 == settings::KEY_HOLD.0 as usize {
+            if p1.0 == app.game.settings.controls.hold as usize {
                 app.game.try_hold();
                 app.game.controls_state.hold = true;
             }
-            if p1.0 == settings::KEY_RESTART.0 as usize {
+            if p1.0 == app.game.settings.controls.restart as usize {
                 app.game.restart();
             }
-            if p1.0 == settings::KEY_UNDO.0 as usize {
+            if p1.0 == app.game.settings.controls.undo as usize {
                 if app.history.len() > 0 {
                     app.game.set_state(app.history.pop_back().unwrap());
                 }
             }
+            if p1.0 == app.game.settings.controls.exit as usize {
+                let _ = DestroyWindow(wnd);
+            }
         }
         if msg == WM_KEYUP {
-            if p1.0 == settings::KEY_LEFT.0 as usize {
+            if p1.0 == app.game.settings.controls.left as usize {
                 app.game.controls_state.left = false;
                 app.game.controls_state.left_counter = 0;
             }
-            if p1.0 == settings::KEY_RIGHT.0 as usize {
+            if p1.0 == app.game.settings.controls.right as usize {
                 app.game.controls_state.right = false;
                 app.game.controls_state.right_counter = 0;
             }
-            if p1.0 == settings::KEY_HOLD.0 as usize {
+            if p1.0 == app.game.settings.controls.hold as usize {
                 app.game.controls_state.hold = false;
             }
         }
@@ -110,56 +122,65 @@ unsafe extern "system" fn wnd_proc(wnd: HWND, msg: u32, p1: WPARAM, p2: LPARAM) 
                 let kb = buffer[0].data.keyboard;
                 let virtual_key = kb.VKey;
                 if kb.Flags as u32 & RI_KEY_BREAK == RI_KEY_BREAK {
-                    if virtual_key == settings::KEY_LEFT.0 {
+                    if virtual_key == app.game.settings.controls.left {
                         app.game.controls_state.left = false;
                         app.game.controls_state.left_counter = 0;
                     }
-                    if virtual_key == settings::KEY_RIGHT.0 {
+                    if virtual_key == app.game.settings.controls.right {
                         app.game.controls_state.right = false;
                         app.game.controls_state.right_counter = 0;
                     }
-                    if virtual_key == settings::KEY_HOLD.0 {
+                    if virtual_key == app.game.settings.controls.hold {
                         app.game.controls_state.hold = false;
                     }
                 } else {
-                    if virtual_key == settings::KEY_HARD_DROP.0 {
+                    if virtual_key == app.game.settings.controls.hard_drop {
                         app.history.push_back(app.game.get_state());
                         app.game.hard_drop();
                     }
-                    if virtual_key == settings::KEY_SOFT_DROP.0 {
+                    if virtual_key == app.game.settings.controls.soft_drop {
                         app.game.soft_drop();
                     }
-                    if virtual_key == settings::KEY_LEFT.0 && !app.game.controls_state.left  {
+                    if virtual_key == app.game.settings.controls.left
+                        && !app.game.controls_state.left
+                    {
                         app.game.current_piece.try_go_left(&app.game.field);
                         app.game.controls_state.left = true;
                         let _ = QueryPerformanceCounter(&mut app.game.controls_state.left_counter);
                     }
-                    if virtual_key == settings::KEY_RIGHT.0 && !app.game.controls_state.right  {
+                    if virtual_key == app.game.settings.controls.right
+                        && !app.game.controls_state.right
+                    {
                         app.game.current_piece.try_go_right(&app.game.field);
                         app.game.controls_state.right = true;
                         let _ = QueryPerformanceCounter(&mut app.game.controls_state.right_counter);
                     }
-                    if virtual_key == settings::KEY_TURN_180.0 {
+                    if virtual_key == app.game.settings.controls.turn_180 {
                         app.game.current_piece.try_turn(&app.game.field, 2);
                     }
-                    if virtual_key == settings::KEY_TURN_CCW.0 {
+                    if virtual_key == app.game.settings.controls.turn_ccw {
                         app.game.current_piece.try_turn(&app.game.field, -1);
                     }
-                    if virtual_key == settings::KEY_TURN_CW.0 {
+                    if virtual_key == app.game.settings.controls.turn_cw {
                         app.game.current_piece.try_turn(&app.game.field, 1);
                     }
-                    if virtual_key == settings::KEY_HOLD.0 && !app.game.controls_state.hold  {
+                    if virtual_key == app.game.settings.controls.hold
+                        && !app.game.controls_state.hold
+                    {
                         app.game.try_hold();
                         app.game.controls_state.hold = true;
                     }
-                    if virtual_key == settings::KEY_RESTART.0 {
+                    if virtual_key == app.game.settings.controls.restart {
                         app.history.push_back(app.game.get_state());
                         app.game.restart();
                     }
-                    if virtual_key == settings::KEY_UNDO.0 {
+                    if virtual_key == app.game.settings.controls.undo {
                         if app.history.len() > 0 {
                             app.game.set_state(app.history.pop_back().unwrap());
                         }
+                    }
+                    if virtual_key == app.game.settings.controls.exit {
+                        let _ = DestroyWindow(wnd);
                     }
                 }
             }
@@ -175,7 +196,7 @@ unsafe extern "system" fn wnd_proc(wnd: HWND, msg: u32, p1: WPARAM, p2: LPARAM) 
     }
 }
 
-pub fn create_window() -> HDC {
+pub fn create_window() -> (HDC, HWND) {
     unsafe {
         let instance = HINSTANCE::from(GetModuleHandleW(None).unwrap());
         let window_class = WNDCLASSEXW {
@@ -198,10 +219,10 @@ pub fn create_window() -> HDC {
             CLASS_NAME,
             w!("ttetris"),
             WS_OVERLAPPEDWINDOW,
-            0,
-            0,
-            settings::INIT_WIDTH,
-            settings::INIT_HEIGHT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
+            CW_USEDEFAULT,
             None,
             None,
             Some(instance),
@@ -227,9 +248,6 @@ pub fn create_window() -> HDC {
         let chosen_format = ChoosePixelFormat(device_context, &pixel_format);
         let _ = SetPixelFormat(device_context, chosen_format, &pixel_format);
 
-        let _ = ShowWindow(wnd, SW_NORMAL);
-        let _ = UpdateWindow(wnd);
-
-        return device_context;
+        return (device_context, wnd);
     }
 }

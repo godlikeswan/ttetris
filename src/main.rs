@@ -15,12 +15,15 @@ use windows::Win32::{
     System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
     UI::{
         Input::{RAWINPUTDEVICE, RIDEV_NOLEGACY, RegisterRawInputDevices},
-        WindowsAndMessaging::{DispatchMessageW, GetMessageW, MSG, PM_NOREMOVE, PeekMessageW},
+        WindowsAndMessaging::{
+            DispatchMessageW, GetMessageW, MSG, PM_NOREMOVE, PeekMessageW, SetWindowPlacement,
+        },
     },
 };
 
 use crate::{
     game::{Game, state::GameState},
+    settings::Settings,
     win::create_window,
 };
 
@@ -35,14 +38,19 @@ static mut APP_PTR: *mut App = ptr::null_mut();
 impl App {
     pub fn new() -> Self {
         Self {
-            game: Game::new(settings::INIT_WIDTH, settings::INIT_HEIGHT),
+            game: Game::new(),
             device_context: HDC::default(),
             history: Default::default(),
         }
     }
 
     pub fn init(&mut self) {
-        let device_context = create_window();
+        let settings_from_file = Settings::load_from_file();
+        if settings_from_file.is_some() {
+            self.game.settings = settings_from_file.unwrap();
+        }
+        let (device_context, wnd) = create_window();
+
         unsafe {
             let gl_context = wglCreateContext(device_context).unwrap();
             let _ = wglMakeCurrent(device_context, gl_context);
@@ -50,6 +58,11 @@ impl App {
             self.device_context = device_context;
             self.game.init(self.device_context);
             // self.history.push_back(self.game.get_state());
+
+            let _ = SetWindowPlacement(
+                wnd,
+                &mut self.game.settings.appearance.window_placement as _,
+            );
 
             let input_devices = [RAWINPUTDEVICE {
                 usUsagePage: 0x01,
