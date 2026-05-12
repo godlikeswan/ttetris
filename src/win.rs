@@ -9,7 +9,7 @@ use windows::Win32::{
     UI::{
         Input::{GetRawInputData, RAWINPUT, RAWINPUTHEADER, RID_INPUT, RIM_TYPEKEYBOARD},
         WindowsAndMessaging::{
-            CW_USEDEFAULT, DefWindowProcW, DestroyWindow, GetWindowPlacement, KF_REPEAT, PostQuitMessage, RI_KEY_BREAK, WINDOW_EX_STYLE, WINDOWPLACEMENT, WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE
+            CW_USEDEFAULT, DefWindowProcW, DestroyWindow, GetWindowPlacement, KF_REPEAT, LoadIconW, PostQuitMessage, RI_KEY_BREAK, WINDOW_EX_STYLE, WINDOWPLACEMENT, WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE
         },
     },
 };
@@ -206,7 +206,7 @@ pub fn create_window() -> (HDC, HWND) {
             cbClsExtra: 0,
             cbWndExtra: 0,
             hInstance: instance,
-            hIcon: HICON::default(),
+            hIcon: LoadIconW(Some(instance), PCWSTR::from_raw(1 as _)).unwrap(),
             hCursor: LoadCursorW(None as _, IDC_ARROW).unwrap(),
             hbrBackground: HBRUSH::default(),
             lpszMenuName: CLASS_NAME,
