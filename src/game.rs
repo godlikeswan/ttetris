@@ -4,8 +4,8 @@ use windows::Win32::{
     Graphics::{
         Gdi::{GetStockObject, HDC, SYSTEM_FONT, SelectObject},
         OpenGL::{
-            GL_BACK, GL_BLEND, GL_COLOR_BUFFER_BIT, GL_FRONT, GL_MODELVIEW, GL_ONE_MINUS_SRC_ALPHA,
-            GL_PROJECTION, GL_SRC_ALPHA, glBlendFunc, glClear, glClearColor, glDrawBuffer,
+            GL_BLEND, GL_COLOR_BUFFER_BIT, GL_MODELVIEW, GL_ONE_MINUS_SRC_ALPHA,
+            GL_PROJECTION, GL_SRC_ALPHA, glBlendFunc, glClear, glClearColor,
             glEnable, glLoadIdentity, glMatrixMode, glOrtho, glPopMatrix, glPushMatrix, glScalef,
             glTranslatef, wglUseFontBitmapsW,
         },
@@ -13,10 +13,10 @@ use windows::Win32::{
     System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
 };
 
-use crate::game::{color::Color, controls::ControlsState, hold::Hold};
 use crate::{
     game::{
-        current_piece::CurrentPiece, field::Field, piece::Piece, queue::Queue, state::GameState,
+        color::Color, controls::ControlsState, current_piece::CurrentPiece, field::Field,
+        hold::Hold, piece::Piece, queue::Queue, state::GameState,
     },
     settings::Settings,
 };

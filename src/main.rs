@@ -6,20 +6,22 @@ mod settings;
 mod win;
 
 use std::{collections::VecDeque, mem::transmute, ptr};
-use windows::core::s;
-use windows::Win32::{
-    Foundation::HWND,
-    Graphics::{
-        Gdi::{HDC, WGL_SWAP_MAIN_PLANE},
-        OpenGL::{wglCreateContext, wglGetProcAddress, wglMakeCurrent, wglSwapLayerBuffers},
-    },
-    System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
-    UI::{
-        Input::{RAWINPUTDEVICE, RIDEV_NOLEGACY, RegisterRawInputDevices},
-        WindowsAndMessaging::{
-            DispatchMessageW, GetMessageW, MSG, PM_NOREMOVE, PeekMessageW, SetWindowPlacement,
+use windows::{
+    Win32::{
+        Foundation::HWND,
+        Graphics::{
+            Gdi::{HDC, WGL_SWAP_MAIN_PLANE},
+            OpenGL::{wglCreateContext, wglGetProcAddress, wglMakeCurrent, wglSwapLayerBuffers},
+        },
+        System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
+        UI::{
+            Input::{RAWINPUTDEVICE, RIDEV_NOLEGACY, RegisterRawInputDevices},
+            WindowsAndMessaging::{
+                DispatchMessageW, GetMessageW, MSG, PM_NOREMOVE, PeekMessageW, SetWindowPlacement,
+            },
         },
     },
+    core::s,
 };
 
 use crate::{
@@ -58,8 +60,7 @@ impl App {
 
             if self.game.settings.appearance.vsync {
                 let proc = wglGetProcAddress(s!("wglSwapIntervalEXT")).unwrap();
-                let wgl_swap_interval_ext: extern "system" fn(i32) -> i32 =
-                    transmute(proc);
+                let wgl_swap_interval_ext: extern "system" fn(i32) -> i32 = transmute(proc);
                 wgl_swap_interval_ext(1);
             }
 

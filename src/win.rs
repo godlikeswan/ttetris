@@ -2,31 +2,27 @@ const CLASS_NAME: PCWSTR = w!("ttetris_class_name");
 
 use std::mem;
 
-use windows::Win32::{
-    Foundation::{HWND, LPARAM, LRESULT, WPARAM},
-    Graphics::{Gdi::HDC, OpenGL::glViewport},
-    System::Performance::QueryPerformanceCounter,
-    UI::{
-        Input::{GetRawInputData, RAWINPUT, RAWINPUTHEADER, RID_INPUT, RIM_TYPEKEYBOARD},
-        WindowsAndMessaging::{
-            CW_USEDEFAULT, DefWindowProcW, DestroyWindow, GetWindowPlacement, KF_REPEAT, LoadIconW, PostQuitMessage, RI_KEY_BREAK, WINDOW_EX_STYLE, WINDOWPLACEMENT, WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE
-        },
-    },
-};
 use windows::{
     Win32::{
-        Foundation::HINSTANCE,
+        Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
         Graphics::{
-            Gdi::{GetDC, HBRUSH},
+            Gdi::{GetDC, HBRUSH, HDC},
             OpenGL::{
                 ChoosePixelFormat, PFD_DOUBLEBUFFER, PFD_DRAW_TO_WINDOW, PFD_SUPPORT_OPENGL,
                 PFD_SWAP_LAYER_BUFFERS, PFD_TYPE_RGBA, PIXELFORMATDESCRIPTOR, SetPixelFormat,
+                glViewport,
             },
         },
-        System::LibraryLoader::GetModuleHandleW,
-        UI::WindowsAndMessaging::{
-            CS_HREDRAW, CS_OWNDC, CS_VREDRAW, CreateWindowExW, HICON, IDC_ARROW, LoadCursorW,
-            RegisterClassExW, WNDCLASSEXW, WS_OVERLAPPEDWINDOW,
+        System::{LibraryLoader::GetModuleHandleW, Performance::QueryPerformanceCounter},
+        UI::{
+            Input::{GetRawInputData, RAWINPUT, RAWINPUTHEADER, RID_INPUT, RIM_TYPEKEYBOARD},
+            WindowsAndMessaging::{
+                CS_HREDRAW, CS_OWNDC, CS_VREDRAW, CW_USEDEFAULT, CreateWindowExW, DefWindowProcW,
+                DestroyWindow, GetWindowPlacement, HICON, IDC_ARROW, KF_REPEAT, LoadCursorW,
+                LoadIconW, PostQuitMessage, RI_KEY_BREAK, RegisterClassExW, WINDOW_EX_STYLE,
+                WINDOWPLACEMENT, WM_DESTROY, WM_INPUT, WM_KEYDOWN, WM_KEYUP, WM_SIZE, WNDCLASSEXW,
+                WS_OVERLAPPEDWINDOW,
+            },
         },
     },
     core::{PCWSTR, w},

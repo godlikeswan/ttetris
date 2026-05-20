@@ -3,8 +3,7 @@ use windows::Win32::Graphics::OpenGL::{
     glColor3fv, glPopMatrix, glPushMatrix, glRecti, glTranslatef,
 };
 
-use crate::game::piece::Piece;
-use crate::game::rng::Rng;
+use crate::game::{piece::Piece, rng::Rng};
 
 pub struct Queue {
     pub buffer: VecDeque<Piece>,

@@ -1,5 +1,8 @@
-use crate::game::piece::rotation::{ROTATION_TESTS, ROTATION_TESTS_I};
-use crate::game::piece::{color::COLORS, shape::SHAPES};
+use crate::game::piece::{
+    color::COLORS,
+    rotation::{ROTATION_TESTS, ROTATION_TESTS_I},
+    shape::SHAPES,
+};
 
 mod color;
 mod rotation;
