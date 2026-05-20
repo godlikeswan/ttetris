@@ -45,7 +45,7 @@ Default controls:
 | Restart | V |
 | Undo | A |
 
-Controls and other settings can be changed in [src/settings.rs](src/settings.rs) (recompilation required = run the command above again)
+Controls and other settings can be changed by editing `ttetris_settings.toml` next to the executable (created after first launch). If you break the file, it will be backed up with an `old` suffix and defaults will be restored.
 
 ## Contribution
 
