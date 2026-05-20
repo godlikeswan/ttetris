@@ -122,6 +122,7 @@ impl CurrentPiece {
             save_last_window_placement: _,
             draw_shadow,
             shadow_alpha,
+            vsync: _,
             window_placement: _,
         } = settings.appearance;
         let piece = &self.piece;

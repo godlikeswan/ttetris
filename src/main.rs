@@ -5,12 +5,13 @@ mod game;
 mod settings;
 mod win;
 
-use std::{collections::VecDeque, ptr};
+use std::{collections::VecDeque, mem::transmute, ptr};
+use windows::core::s;
 use windows::Win32::{
     Foundation::HWND,
     Graphics::{
         Gdi::{HDC, WGL_SWAP_MAIN_PLANE},
-        OpenGL::{wglCreateContext, wglMakeCurrent, wglSwapLayerBuffers},
+        OpenGL::{wglCreateContext, wglGetProcAddress, wglMakeCurrent, wglSwapLayerBuffers},
     },
     System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
     UI::{
@@ -54,6 +55,13 @@ impl App {
         unsafe {
             let gl_context = wglCreateContext(device_context).unwrap();
             let _ = wglMakeCurrent(device_context, gl_context);
+
+            if self.game.settings.appearance.vsync {
+                let proc = wglGetProcAddress(s!("wglSwapIntervalEXT")).unwrap();
+                let wgl_swap_interval_ext: extern "system" fn(i32) -> i32 =
+                    transmute(proc);
+                wgl_swap_interval_ext(1);
+            }
 
             self.device_context = device_context;
             self.game.init(self.device_context);
