@@ -178,11 +178,20 @@ impl Game {
             }
         }
         self.field.clear_full_lines();
+        if self.is_topped_out() {
+            self.restart();
+            return;
+        }
         self.current_piece.set(self.queue.shift());
         self.hold.was_used = false;
         if self.controls_state.hold {
             self.try_hold();
         }
+    }
+
+    pub fn is_topped_out(&self) -> bool {
+        let next_piece = &self.queue.buffer[0];
+        !CurrentPiece::can_fit(&self.field, next_piece, 3, 21, 0)
     }
 
     pub fn restart(&mut self) {
